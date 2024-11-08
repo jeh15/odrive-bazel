@@ -1,0 +1,7 @@
+"""
+    Bazel module ODrive Control via CAN.
+"""
+
+module(
+    name = "odrive_control",
+)

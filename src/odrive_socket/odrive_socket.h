@@ -77,7 +77,7 @@ class ODriveSocket {
         }
 
         ssize_t _send(const canid_t id, const uint8_t *data, const uint8_t size) const {
-            assert(size > CAN_MAX_DLC);
+            assert(size <= CAN_MAX_DLC);
             struct can_frame frame;
             frame.can_id = id;
             frame.can_dlc = size;

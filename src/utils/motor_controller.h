@@ -15,7 +15,7 @@ class MotorController {
         MotorController(
             std::shared_ptr<ODriveSocket> odrv, int motor_id
         ) {
-            odrv_ptr(std::move(odrv));
+            odrv_ptr = *odrv;
             MOTOR_ID = motor_id;
         }
 

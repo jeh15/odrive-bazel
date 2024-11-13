@@ -8,8 +8,12 @@ const int MOTOR_ID = 0;
 const uint32_t CTRL_MODE = 1;
 
 int main(void) {
+    // Create ODriveSocket Object:
     ODriveSocket odrv(CAN_IFC);
+
+    // Set Control Mode and AxisState:
     odrv.setControlMode(MOTOR_ID, CTRL_MODE);
+    odrv.setAxisState(MOTOR_ID, 8);   
 
     while(true){
         float torque_setpoint = 0.1f;

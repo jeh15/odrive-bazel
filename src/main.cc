@@ -2,7 +2,8 @@
 #include <string>
 #include <cstdlib>
 
-#include "odrive_socket/odrive_socket.h"
+#include "utils/odrive_socket.h"
+#include "utils/motor_controller.h"
 
 const std::string CAN_IFC = "can0";
 const int MOTOR_ID = 0;
@@ -14,6 +15,12 @@ void exiting() {
 }
 
 int main(void) {
+    // Create Shared ODrive Socket and Motor Controller:
+    MotorController odrv(
+        std::make_shared<ODriveSocket>(ODriveSocket(CAN_IFC)),
+        MOTOR_ID
+    );
+
     // Set Control Mode and AxisState:
     odrv.setControlMode(MOTOR_ID, CTRL_MODE);
     odrv.setAxisState(MOTOR_ID, 8);   
@@ -30,7 +37,6 @@ int main(void) {
         printf("Position: %f, Velocity: %f\n", position, velocity);
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
-
 
     std::atexit(exiting);
     return 0;

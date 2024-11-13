@@ -12,12 +12,16 @@ int main(void) {
     odrv.setControlMode(MOTOR_ID, CTRL_MODE);
 
     while(true){
+        float torque_setpoint = 0.1f;
+
+        // Send Torque Command:
+        odrv.setTorque(MOTOR_ID, torque_setpoint);
+
+        // Print Position and Velocity:
         float position = odrv.getPositionEstimate(MOTOR_ID);
         float velocity = odrv.getVelocityEstimate(MOTOR_ID);
         printf("Position: %f, Velocity: %f\n", position, velocity);
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
-        
     }
 
     return 0;

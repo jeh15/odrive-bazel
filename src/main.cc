@@ -8,11 +8,7 @@
 const std::string CAN_IFC = "can0";
 const int MOTOR_ID = 0;
 const uint32_t CTRL_MODE = 1;
-ODriveSocket odrv(CAN_IFC);
 
-void exiting() {
-    odrv.setAxisState(MOTOR_ID, 1);
-}
 
 int main(void) {
     // Create Shared ODrive Socket and Motor Controller:
@@ -22,22 +18,18 @@ int main(void) {
     );
 
     // Set Control Mode and AxisState:
-    odrv.setControlMode(MOTOR_ID, CTRL_MODE);
-    odrv.setAxisState(MOTOR_ID, 8);   
+    odrv.set_control_mode(CTRL_MODE);
+    odrv.set_axis_state(8);   
 
     while(true){
         float torque_setpoint = 0.1f;
 
         // Send Torque Command:
-        odrv.setTorque(MOTOR_ID, torque_setpoint);
+        odrv.set_torque(torque_setpoint);
 
-        // Print Position and Velocity:
-        float position = odrv.getPositionEstimate(MOTOR_ID);
-        float velocity = odrv.getVelocityEstimate(MOTOR_ID);
-        printf("Position: %f, Velocity: %f\n", position, velocity);
+        // Sleep for 20ms:
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
-    std::atexit(exiting);
     return 0;
 }

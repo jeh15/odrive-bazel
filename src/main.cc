@@ -1,16 +1,19 @@
 #include <chrono>
 #include <string>
+#include <cstdlib>
 
 #include "odrive_socket/odrive_socket.h"
 
 const std::string CAN_IFC = "can0";
 const int MOTOR_ID = 0;
 const uint32_t CTRL_MODE = 1;
+ODriveSocket odrv(CAN_IFC);
+
+void exiting() {
+    odrv.setAxisState(MOTOR_ID, 1);
+}
 
 int main(void) {
-    // Create ODriveSocket Object:
-    ODriveSocket odrv(CAN_IFC);
-
     // Set Control Mode and AxisState:
     odrv.setControlMode(MOTOR_ID, CTRL_MODE);
     odrv.setAxisState(MOTOR_ID, 8);   
@@ -28,5 +31,7 @@ int main(void) {
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
 
+
+    std::atexit(exiting);
     return 0;
 }

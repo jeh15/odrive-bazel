@@ -10,7 +10,7 @@ const uint32_t CTRL_MODE = 1;
 
 
 int main(void) {
-    auto odrv = std::make_shared<ODriveSocket>(ODriveSocket(CAN_IFC));
+    auto odrv = std::make_shared<ODriveSocket>(CAN_IFC);
 
     // Create Shared ODrive Socket and Motor Controller:
     MotorController motor_controller(

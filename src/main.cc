@@ -1,6 +1,5 @@
 #include <chrono>
 #include <string>
-#include <cstdlib>
 
 #include "utils/odrive_socket.h"
 #include "utils/motor_controller.h"

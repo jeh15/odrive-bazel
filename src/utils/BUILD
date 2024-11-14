@@ -5,13 +5,17 @@ cc_library(
 )
 
 cc_library(
-    name = "motor_controller",
-    srcs = ["motor_controller.h"],
+    name = "estop",
+    srcs = ["estop.h"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
-    name = "estop",
-    srcs = ["estop.h"],
+    name = "motor_controller",
+    srcs = ["motor_controller.h"],
+    deps = [
+        ":odrive_socket",
+        ":estop",
+    ],
     visibility = ["//visibility:public"],
 )

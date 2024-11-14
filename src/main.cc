@@ -10,21 +10,23 @@ const uint32_t CTRL_MODE = 1;
 
 
 int main(void) {
+    auto odrv = std::make_shared<ODriveSocket>(ODriveSocket(CAN_IFC));
+
     // Create Shared ODrive Socket and Motor Controller:
-    MotorController odrv(
-        std::make_shared<ODriveSocket>(ODriveSocket(CAN_IFC)),
+    MotorController motor_controller(
+        odrv,
         MOTOR_ID
     );
 
     // Set Control Mode and AxisState:
-    odrv.set_control_mode(CTRL_MODE);
-    odrv.set_axis_state(8);   
+    motor_controller.set_axis_state(ODriveAxisState::CLOSED_LOOP_CONTROL);
+    motor_controller.set_control_mode(ODriveControlMode::TORQUE);
 
     while(true){
         float torque_setpoint = 0.1f;
 
         // Send Torque Command:
-        odrv.set_torque(torque_setpoint);
+        motor_controller.set_torque(torque_setpoint);
 
         // Sleep for 20ms:
         std::this_thread::sleep_for(std::chrono::milliseconds(20));

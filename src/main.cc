@@ -1,6 +1,7 @@
 #include <chrono>
 #include <string>
 #include <filesystem>
+#include <iostream>
 #include <format>
 
 #include "utils/odrive_socket.h"

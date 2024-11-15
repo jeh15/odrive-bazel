@@ -4,5 +4,6 @@ cc_binary(
     deps = [
         "//src/utils:odrive_socket",
         "//src/utils:motor_controller",
+        "@spdlog//:spdlog",
     ],
 )

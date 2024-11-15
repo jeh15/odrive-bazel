@@ -1,0 +1,10 @@
+--- /dev/null
++++ MODULE.bazel
+@@ -0,0 +1,7 @@
++"""
++    Bazel Module for spdlog
++"""
++
++module(
++    name = "spdlog",
++)

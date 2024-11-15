@@ -1,0 +1,15 @@
+--- /dev/null
++++ BUILD.bazel
+@@ -0,0 +1,12 @@
++package(default_visibility = ["//visibility:public"])
++
++hdrs = glob([
++    "include/**/*.h",
++    "include/*.h",
++])
++
++cc_library(
++    name = "spdlog",
++    hdrs = hdrs,
++    includes = ["include"],
++)

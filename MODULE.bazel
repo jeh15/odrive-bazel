@@ -6,6 +6,14 @@ module(
     name = "odrive_control",
 )
 
+bazel_dep(name = "spdlog")
+git_override(
+    module_name = "spdlog",
+    remote = "https://github.com/gabime/spdlog.git",
+    commit = "51a0deca2c825f1d4461655a18bb37d6df76646d",
+    patches = ["patches/spdlog/module_dot_bazel.patch", "patches/spdlog/build_dot_bazel.patch"],
+)
+
 # Autocomplete for Bazel:
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor

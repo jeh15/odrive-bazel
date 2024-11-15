@@ -1,2 +1,2 @@
 common --enable_bzlmod
---cxxopt='-std=c++23'
+--cxxopt='-std=c++20'

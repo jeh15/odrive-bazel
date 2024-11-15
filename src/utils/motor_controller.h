@@ -33,4 +33,17 @@ public:
     void set_torque(const float torque_setpoint) {
         _odrv_socket->setTorque(_motor_id, torque_setpoint);
     }
+
+    float get_position() {
+        return _odrv_socket->getPositionEstimate(_motor_id);
+    }
+
+    float get_velocity() {
+        return _odrv_socket->getVelocityEstimate(_motor_id);
+    }
+
+    float get_torque_estimate() {
+        return _odrv_socket->getTorqueEstimate(_motor_id);
+    }
+
 };

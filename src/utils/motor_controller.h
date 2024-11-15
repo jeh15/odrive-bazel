@@ -20,7 +20,9 @@ public:
     MotorController(std::shared_ptr<ODriveSocket> odrv, int motor_id)
         : Estop(), _odrv_socket(odrv), _motor_id(motor_id) { }
 
-    ~MotorController() { }
+    ~MotorController() { 
+        _odrv_socket->setAxisState(_motor_id, ODriveAxisState::IDLE);
+    }
 
     void set_axis_state(const ODriveAxisState axis_state) {
         _odrv_socket->setAxisState(_motor_id, axis_state);

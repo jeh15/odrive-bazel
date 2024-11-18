@@ -10,6 +10,7 @@ class MotorController : public Estop
 private:
     std::shared_ptr<ODriveSocket> _odrv_socket;
     canid_t _motor_id;
+    float _torque_constant = 8.27F / 330.0F;
 
     void estop(int sig) override {
         printf("Running ESTOP\n");
@@ -45,7 +46,8 @@ public:
     }
 
     float get_torque_estimate() {
-        return _odrv_socket->getTorqueEstimate(_motor_id);
+        float iq = _odrv_socket->getIqMeasured(_motor_id);
+        return _torque_constant * iq;
     }
 
 };

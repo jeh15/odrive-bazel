@@ -215,6 +215,7 @@ private:
             case ODriveCanID::GET_TORQUES:
                 // Get_Torques
                 float torq_estimate;
+                
                 std::memcpy(&torq_estimate, frame.data, sizeof(torq_estimate));
                 {
                     std::lock_guard<std::mutex> lock(_infos_mutex);

@@ -50,10 +50,13 @@ int main(void) {
         float torque = motor_controller.get_torque_estimate();
 
         // Log Data:
-        logger->info("Postion: {0}, Velocity: {1}, Torque: {2}", position, velocity, torque);
+        logger->info(
+            "Postion: {0}, Velocity: {1}, Torque: {2}",
+            position, velocity, torque
+        );
 
         // Sleep for 20ms:
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
 
     return 0;

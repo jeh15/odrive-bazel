@@ -50,4 +50,12 @@ public:
         return _torque_constant * iq;
     }
 
+    float get_current_setpoint() {
+        return _odrv_socket->getIqSetpoint(_motor_id);
+    }
+
+    float get_current_measured() {
+        return _odrv_socket->getIqMeasured(_motor_id);
+    }
+
 };

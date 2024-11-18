@@ -70,3 +70,6 @@ user.bazelrc
 # Hedron Compile Commands Extractor for Bazel
 compile_commands.json
 /external
+
+# Data Log:
+*.txt

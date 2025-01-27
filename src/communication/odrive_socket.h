@@ -334,7 +334,7 @@ public:
         _send(arb_id, data, sizeof(data));
     }
 
-    void setPosition(const canid_t id, const float pos_setpoint, const float vel_feedforward = 0.F, const float torq_feedforward = 0.F)
+    void position_command(const canid_t id, const float pos_setpoint, const float vel_feedforward = 0.F, const float torq_feedforward = 0.F)
     {
         const uint32_t arb_id = _getArbID(id, ODriveCanID::SET_POSITION);
         const int16_t vel_ff_int = (int16_t)(vel_feedforward * 1E3F);
@@ -346,7 +346,7 @@ public:
         _send(arb_id, data, sizeof(data));
     }
 
-    void setVelocity(const canid_t id, const float vel_setpoint, const float torq_feedforward = 0.F)
+    void velocity_command(const canid_t id, const float vel_setpoint, const float torq_feedforward = 0.F)
     {
         const uint32_t arb_id = _getArbID(id, ODriveCanID::SET_VELOCITY);
         uint8_t data[8];
@@ -355,7 +355,7 @@ public:
         _send(arb_id, data, sizeof(data));
     }
 
-    void setTorque(const canid_t id, const float torq_setpoint)
+    void torque_command(const canid_t id, const float torq_setpoint)
     {
         const uint32_t arb_id = _getArbID(id, ODriveCanID::SET_TORQUE);
         uint8_t data[4];
@@ -372,7 +372,7 @@ public:
         _send(arb_id, data, sizeof(data));
     }
 
-    void setPosGain(const canid_t id, const float pos_gain)
+    void set_stiffness(const canid_t id, const float pos_gain)
     {
         const uint32_t arb_id = _getArbID(id, ODriveCanID::SET_POS_GAIN);
         uint8_t data[4];
@@ -380,7 +380,7 @@ public:
         _send(arb_id, data, sizeof(data));
     }
 
-    void setVelGains(const canid_t id, const float vel_gain, const float vel_int_gain)
+    void set_damping(const canid_t id, const float vel_gain, const float vel_int_gain = 0.0f)
     {
         const uint32_t arb_id = _getArbID(id, ODriveCanID::SET_VEL_GAINS);
         uint8_t data[8];

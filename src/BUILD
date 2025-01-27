@@ -2,8 +2,9 @@ cc_binary(
     name = "main",
     srcs = ["main.cc"],
     deps = [
-        "//src/utils:odrive_socket",
-        "//src/utils:motor_controller",
+        "//src/communication:odrive_socket",
+        "//src/controller:low_level_controller",
+        "//src/controller:low_level_types",
         "@spdlog//:spdlog",
     ],
 )

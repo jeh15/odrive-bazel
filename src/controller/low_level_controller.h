@@ -6,10 +6,10 @@
 #include <atomic>
 #include <memory>
 
-#include "communication/odrive_socket.h"
-#include "utils/estop.h"
+#include "src/communication/odrive_socket.h"
+#include "src/utils/estop.h"
 
-#include "low_level_types.h"
+#include "src/controller/low_level_types.h"
 
 
 class MotorController : public Estop {
@@ -45,7 +45,7 @@ class MotorController : public Estop {
             thread.join();
         }
 
-        void update_command(lowleveltypes::MotorCommand &command) {
+        void update_command(lowleveltypes::MotorCommand& command) {
             std::lock_guard<std::mutex> lock(mutex);
             for(const canid_t motor_id : motor_ids) {
                 motor_commands.position_setpoint[motor_id] = command.position_setpoint[motor_id];

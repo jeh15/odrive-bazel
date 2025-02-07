@@ -1,0 +1,28 @@
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
+load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
+
+pybind_library(
+    name = "lowlevelapi_cc_library",
+    srcs = ["lowlevelapi_py.cc"],
+    deps = [
+        "//src/controller:low_level_controller",
+        "//src/controller:low_level_types",
+        "//src/communication:odrive_socket",
+    ],
+    alwayslink = True,
+    visibility = ["//visibility:public"],
+)
+
+pybind_extension(
+    name = "lowlevelapi",
+    deps = [":lowlevelapi_cc_library"],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "lowlevelapi_library",
+    data = [":lowlevelapi"],
+    imports = ["."],
+    visibility = ["//visibility:public"],
+)

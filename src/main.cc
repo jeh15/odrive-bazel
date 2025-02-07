@@ -38,7 +38,7 @@ int main(void) {
     // Set Control Mode, AxisState, and initialize control thread:
     motor_controller.set_axis_state(ODriveAxisState::CLOSED_LOOP_CONTROL);
     motor_controller.set_control_mode(ODriveControlMode::TORQUE);
-    motor_controller.initialized_control_thread();
+    motor_controller.initialize_control_thread();
 
     // Initialize Command Struct:
     lowleveltypes::MotorCommand motor_command = { 0 };

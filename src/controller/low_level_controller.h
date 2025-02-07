@@ -36,7 +36,7 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
-        void initialized_control_thread() {
+        void initialize_control_thread() {
             thread = std::thread(&MotorController::control_loop, this);
         }
 

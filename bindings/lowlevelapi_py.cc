@@ -68,8 +68,8 @@ PYBIND11_MODULE(lowlevelapi, m) {
         .def("velocity_command", &ODriveSocket::velocity_command, "id"_a, "vel_setpoint"_a, "torq_feedforward"_a = 0.F)
         .def("torque_command", &ODriveSocket::torque_command, "id"_a, "torq_setpoint"_a)
         .def("setLimits", &ODriveSocket::setLimits, "id"_a, "vel_limit"_a, "curr_limit"_a)
-        .def("set_stiffness", &ODriveSocket::set_stiffness, "id"_a, "pos_gain"_a);
-        .def("set_damping", &ODriveSocket::set_damping, "id"_a, "vel_gain"_a, "vel_integrator_gain"_a = 0.0f);
+        .def("set_stiffness", &ODriveSocket::set_stiffness, "id"_a, "pos_gain"_a)
+        .def("set_damping", &ODriveSocket::set_damping, "id"_a, "vel_gain"_a, "vel_integrator_gain"_a = 0.0f)
         .def("clearErrors", &ODriveSocket::clearErrors, "id"_a);
 
     py::class_<lowleveltypes::MotorCommand>(m, "MotorCommand")

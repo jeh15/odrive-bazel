@@ -13,7 +13,7 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 
-std::shared_ptr<ODriveSocket> create_odrive_socket(std::string if_name) {
+std::shared_ptr<ODriveSocket> create_socket(std::string if_name) {
     return std::make_shared<ODriveSocket>(if_name);
 }
 
@@ -21,7 +21,7 @@ std::shared_ptr<ODriveSocket> create_odrive_socket(std::string if_name) {
 PYBIND11_MODULE(lowlevelapi, m) {
     m.doc() = "Low-level Control API bindings";
 
-    m.def("create_odrive_socket", &create_odrive_socket, "if_name"_a);
+    m.def("create_socket", &create_socket, "if_name"_a);
 
     py::enum_<ODriveCanID>(m, "ODriveCanID")
         .value("HEARTBEAT", ODriveCanID::HEARTBEAT)

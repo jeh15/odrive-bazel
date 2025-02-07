@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
 cc_binary(
     name = "main",
     srcs = ["main.cc"],
@@ -6,5 +8,13 @@ cc_binary(
         "//src/controller:low_level_controller",
         "//src/controller:low_level_types",
         "@spdlog//:spdlog",
+    ],
+)
+
+py_binary(
+    name = "main_py",
+    srcs = ["main.py"],
+    deps = [
+        "//bindings:lowlevelapi_library",
     ],
 )

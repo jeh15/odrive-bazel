@@ -13,15 +13,8 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 
-std::shared_ptr<ODriveSocket> create_socket(std::string if_name) {
-    return std::make_shared<ODriveSocket>(if_name);
-}
-
-
 PYBIND11_MODULE(lowlevelapi, m) {
     m.doc() = "Low-level Control API bindings";
-
-    m.def("create_socket", &create_socket, "if_name"_a);
 
     py::enum_<ODriveCanID>(m, "ODriveCanID")
         .value("HEARTBEAT", ODriveCanID::HEARTBEAT)
@@ -59,7 +52,7 @@ PYBIND11_MODULE(lowlevelapi, m) {
         .value("TRAP_TRAJ", ODriveInputMode::TRAP_TRAJ)
         .value("TORQUE_RAMP", ODriveInputMode::TORQUE_RAMP);
 
-    py::class_<ODriveSocket>(m, "ODriveSocket")
+    py::class_<ODriveSocket, std::shared_ptr<ODriveSocket>>(m, "ODriveSocket")
         .def(py::init<std::string>(), "if_name"_a)
         .def("getAxisError", &ODriveSocket::getAxisError, "id"_a)
         .def("getAxisState", &ODriveSocket::getAxisState, "id"_a)

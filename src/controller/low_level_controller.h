@@ -74,7 +74,8 @@ class MotorController : public Estop {
         // ODrive Variables:
         std::shared_ptr<ODriveSocket> odrv_socket;
         std::vector<canid_t> motor_ids;
-        float torque_constant = 8.27F / 330.0F;
+        float torque_constant_knee = 8.27F / 330.0F;
+        float torque_constant_hip = 8.27f / 150.0f;
         // Motor Command Struct:
         lowleveltypes::MotorCommand motor_commands = { 0 };
         // Control Loop Thread Variables:

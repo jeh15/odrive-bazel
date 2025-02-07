@@ -273,6 +273,7 @@ public:
         assert(id <= MAX_CANID);
         std::lock_guard<std::mutex> lock(_infos_mutex);
         return _infos[id].torq_estimate;
+        // If this doesnt work change to use torque constant * current measured...
     }
 
     float getIqSetpoint(const canid_t id)

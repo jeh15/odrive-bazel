@@ -29,7 +29,7 @@ def main(argv=None):
             print(f"Position: {motor_states.position[i]}")
             print(f"Velocity: {motor_states.velocity[i]}")
             print(f"Torque Estimate: {motor_states.torque_estimate[i]}")
-            print(f"Current Setpoint: {motor_states.current_stepoint[i]}")
+            print(f"Current Setpoint: {motor_states.current_setpoint[i]}")
             print(f"Current Measured: {motor_states.current_measured[i]}")
 
 

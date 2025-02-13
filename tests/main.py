@@ -23,7 +23,12 @@ def main(argv=None):
 
     # Create Motor Command Struct:
     motor_command = lowlevelapi.MotorCommand()
-    motor_command.velocity_setpoint = [0.0, 0.1]
+    motor_command.position_setpoint = [0.0, 0.0]
+    motor_command.velocity_setpoint = [0.0, 0.75]
+    motor_command.torque_feedforward = [0.0, 1.0]
+    motor_command.kp = [0.0, 0.0]
+    motor_command.kd = [0.0, 1.0]
+    motor_command.stiffness = [0.0, 0.0]
     motor_command.damping = [0.0, 0.16]
 
     # Send Motor Command:

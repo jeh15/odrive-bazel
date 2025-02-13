@@ -36,6 +36,13 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
+        std::vector<ODriveAxisState> get_axis_state() {
+            std::vector<ODriveAxisState> axis_states;
+            for(const canid_t motor_id : motor_ids)
+                axis_states.push_back(odrv_socket->getAxisState(motor_id));
+            return axis_states;
+        }
+
         void initialize_control_thread() {
             thread = std::thread(&MotorController::control_loop, this);
         }

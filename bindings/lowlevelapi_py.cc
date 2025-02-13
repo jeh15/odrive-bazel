@@ -123,5 +123,6 @@ PYBIND11_MODULE(lowlevelapi, m) {
         .def("stop_control_thread", &MotorController::stop_control_thread)
         .def("update_command", &MotorController::update_command, "command"_a)
         .def("get_motor_states", &MotorController::get_motor_states);
+        .def("get_axis_state", &MotorController::get_axis_state);
     
 }

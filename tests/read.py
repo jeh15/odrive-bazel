@@ -24,13 +24,13 @@ def main(argv=None):
     start_time = time.time()
     while (time.time() - start_time < 10.0):
         motor_states = motor_controller.get_motor_states()
-        for i in range(len(motor_ids)):
-            print(f"Motor {i}:")
-            print(f"Position: {motor_states.position[i]}")
-            print(f"Velocity: {motor_states.velocity[i]}")
-            print(f"Torque Estimate: {motor_states.torque_estimate[i]}")
-            print(f"Current Setpoint: {motor_states.current_setpoint[i]}")
-            print(f"Current Measured: {motor_states.current_measured[i]}")
+        print(f"Motor 1: \t \t Motor 2:")
+        print(f"Position: {motor_states.position[0]} \t \t Position: {motor_states.position[1]}")
+        print(f"Velocity: {motor_states.velocity[0]} \t \t Velocity: {motor_states.velocity[1]}")
+        print(f"Torque Estimate: {motor_states.torque_estimate[0]} \t \t Torque Estimate: {motor_states.torque_estimate[1]}")
+        print(f"Current Setpoint: {motor_states.current_setpoint[0]} \t \t Current Setpoint: {motor_states.current_setpoint[1]}")
+        print(f"Current Measured: {motor_states.current_measured[0]} \t \t Current Measured: {motor_states.current_measured[1]}")
+        time.sleep(0.1)
 
 
 if __name__ == "__main__":

@@ -38,11 +38,26 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
-        std::vector<uint8_t> get_axis_state() {
-            std::vector<uint8_t> axis_states;
-            for(const canid_t motor_id : motor_ids)
-                axis_states.push_back(odrv_socket->getAxisState(motor_id));
-            return axis_states;
+        std::vector<ODriveAxisState> get_axis_state() {
+            std::vector<ODriveAxisState> axis_state;
+            for(const canid_t motor_id : motor_ids) {
+                uint8_t state = odrv_socket->getAxisState(motor_id);
+                switch (state) {
+                    case ODriveAxisState::UNDEFINED:
+                        axis_state.push_back(ODriveAxisState::UNDEFINED);
+                        break;
+                    case ODriveAxisState::IDLE:
+                        axis_state.push_back(ODriveAxisState::IDLE);
+                        break;
+                    case ODriveAxisState::CLOSED_LOOP_CONTROL:
+                        axis_state.push_back(ODriveAxisState::CLOSED_LOOP_CONTROL);
+                        break;
+                    default:
+                        axis_state.push_back(ODriveAxisState::UNDEFINED);
+                        break;
+                }
+            }
+            return axis_state;
         }
 
         void initialize_control_thread() {

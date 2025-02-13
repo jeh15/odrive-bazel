@@ -2,9 +2,11 @@
 
 #include <linux/can.h>
 #include <thread>
+#include <cstdint>
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <vector>
 
 #include "src/communication/odrive_socket.h"
 #include "src/utils/estop.h"
@@ -36,8 +38,8 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
-        std::vector<ODriveAxisState> get_axis_state() {
-            std::vector<ODriveAxisState> axis_states;
+        std::vector<uint8_t> get_axis_state() {
+            std::vector<uint8_t> axis_states;
             for(const canid_t motor_id : motor_ids)
                 axis_states.push_back(odrv_socket->getAxisState(motor_id));
             return axis_states;

@@ -1,4 +1,5 @@
 from absl import app
+import time
 
 import lowlevelapi
 
@@ -20,8 +21,16 @@ def main(argv=None):
     )
 
     # Read Motor States:
-    motor_states = motor_controller.get_motor_states()
-    print(motor_states)
+    start_time = time.time()
+    while (time.time() - start_time < 10.0):
+        motor_states = motor_controller.get_motor_states()
+        for i in range(len(motor_ids)):
+            print(f"Motor {i}:")
+            print(f"Position: {motor_states.position[i]}")
+            print(f"Velocity: {motor_states.velocity[i]}")
+            print(f"Torque Estimate: {motor_states.torque_estimate[i]}")
+            print(f"Current Setpoint: {motor_states.current_stepoint[i]}")
+            print(f"Current Measured: {motor_states.current_measured[i]}")
 
 
 if __name__ == "__main__":

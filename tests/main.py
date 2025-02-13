@@ -1,3 +1,4 @@
+from absl import app
 import time
 
 import lowlevelapi
@@ -41,4 +42,4 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-    main()
+    app.run(main)

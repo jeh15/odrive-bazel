@@ -12,13 +12,7 @@ bazel_dep(name = "rules_python", version = "1.0.0")
 # Pybind11:
 bazel_dep(name = "pybind11_bazel", version = "2.13.6")
 
-# Python Toolchain:
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    configure_coverage_tool = True,
-    python_version = "3.12",
-)
-
+# Logging:
 bazel_dep(name = "spdlog")
 git_override(
     module_name = "spdlog",
@@ -26,6 +20,23 @@ git_override(
     commit = "51a0deca2c825f1d4461655a18bb37d6df76646d",
     patches = ["patches/spdlog/module_dot_bazel.patch", "patches/spdlog/build_dot_bazel.patch"],
 )
+
+# Python Toolchain:
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.12",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    download_only = True,
+    hub_name = "pypi",
+    # We need to use the same version here as in the `python.toolchain` call.
+    python_version = "3.12",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "pypi")
 
 # Autocomplete for Bazel:
 # Hedron's Compile Commands Extractor for Bazel

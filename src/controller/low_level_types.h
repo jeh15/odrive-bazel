@@ -12,6 +12,7 @@ namespace lowleveltypes {
         std::array<float, num_motors> velocity_setpoint = { 0 };
         std::array<float, num_motors> torque_feedforward = { 0 };
         std::array<float, num_motors> damping = { 0 };
+        std::array<float, num_motors> velocity_integrator = { 0 };
         std::array<float, num_motors> stiffness = { 0 };
         std::array<float, num_motors> kp = { 0 };
         std::array<float, num_motors> kd = { 0 };

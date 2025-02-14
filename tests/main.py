@@ -17,25 +17,25 @@ def main(argv=None):
         lowlevelapi.ODriveAxisState.CLOSED_LOOP_CONTROL,
     )
     motor_controller.set_control_mode(
-        lowlevelapi.ODriveControlMode.VELOCITY,
+        lowlevelapi.ODriveControlMode.POSITION,
     )
     motor_controller.initialize_control_thread()
 
     # Create Motor Command Struct:
     motor_command = lowlevelapi.MotorCommand()
-    motor_command.position_setpoint = [0.0, 0.0]
-    motor_command.velocity_setpoint = [0.0, 0.75]
-    motor_command.torque_feedforward = [0.0, 1.0]
+    motor_command.position_setpoint = [1.0, 0.0]
+    motor_command.velocity_setpoint = [0.0, 0.0]
+    motor_command.torque_feedforward = [0.0, 0.0]
     motor_command.kp = [0.0, 0.0]
-    motor_command.kd = [0.0, 1.0]
-    motor_command.stiffness = [0.0, 0.0]
-    motor_command.damping = [0.0, 0.16]
+    motor_command.kd = [0.0, 0.0]
+    motor_command.stiffness = [50.0, 0.0]
+    motor_command.damping = [0.1, 0.1]
 
     # Send Motor Command:
     motor_controller.update_command(motor_command)
 
     # Sleep for 2 seconds:
-    time.sleep(2)
+    time.sleep(1)
 
     # Stop Control Thread:
     motor_controller.stop_control_thread()

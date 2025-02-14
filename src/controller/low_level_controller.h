@@ -39,7 +39,7 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
-        std::vector<std::string> get_axis_state() {
+        std::vector<std::string> get_axis_state(void) {
             std::vector<std::string> axis_state;
             for(const canid_t motor_id : motor_ids) {
                 uint8_t state = odrv_socket->getAxisState(motor_id);
@@ -77,6 +77,7 @@ class MotorController : public Estop {
                 motor_commands.velocity_setpoint[motor_id] = command.velocity_setpoint[motor_id];
                 motor_commands.torque_feedforward[motor_id] = command.torque_feedforward[motor_id];
                 motor_commands.damping[motor_id] = command.damping[motor_id];
+                motor_commands.velocity_integrator[motor_id] = command.velocity_integrator[motor_id];
                 motor_commands.stiffness[motor_id] = command.stiffness[motor_id];
                 motor_commands.kp[motor_id] = command.kp[motor_id];
                 motor_commands.kd[motor_id] = command.kd[motor_id];
@@ -127,7 +128,7 @@ class MotorController : public Estop {
                         switch(control_mode) {
                             case ODriveControlMode::POSITION:
                                 odrv_socket->set_stiffness(motor_id, motor_commands.stiffness[motor_id]);
-                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id]);
+                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
                                 odrv_socket->position_command(
                                     motor_id,
                                     motor_commands.position_setpoint[motor_id],
@@ -136,7 +137,7 @@ class MotorController : public Estop {
                                 );
                                 break;
                             case ODriveControlMode::VELOCITY:
-                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id]);
+                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
                                 odrv_socket->velocity_command(
                                     motor_id,
                                     motor_commands.velocity_setpoint[motor_id],

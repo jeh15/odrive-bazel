@@ -27,9 +27,10 @@ def main(argv=None):
     motor_command.velocity_setpoint = [0.0, 0.0]
     motor_command.torque_feedforward = [0.0, 0.0]
     motor_command.kp = [0.0, 0.0]
-    motor_command.kd = [0.0, 0.0]
-    motor_command.stiffness = [50.0, 0.0]
-    motor_command.damping = [0.1, 0.1]
+    motor_command.kd = [00, 0.0]
+    motor_command.stiffness = [50.0, 50.0]
+    motor_command.damping = [0.15, 0.15]
+    motor_command.velocity_integrator = [7.5, 7.5]
 
     # Send Motor Command:
     motor_controller.update_command(motor_command)

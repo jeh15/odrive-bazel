@@ -25,9 +25,6 @@ class MotorController : public Estop {
                 odrv_socket->setAxisState(motor_id, ODriveAxisState::IDLE);
         }
 
-        // Public members:
-        ODriveControlMode control_mode = ODriveControlMode::VELOCITY;
-
         // Public methods:
         void set_axis_state(const ODriveAxisState axis_state) {
             for(const canid_t motor_id : motor_ids)
@@ -35,6 +32,7 @@ class MotorController : public Estop {
         }
 
         void set_control_mode(const ODriveControlMode control_mode, const ODriveInputMode input_mode = ODriveInputMode::PASSTHROUGH) {
+            ctrl_mode = control_mode;
             for(const canid_t motor_id : motor_ids)
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
@@ -102,6 +100,7 @@ class MotorController : public Estop {
         std::vector<canid_t> motor_ids;
         float torque_constant_knee = 8.27F / 330.0F;
         float torque_constant_hip = 8.27f / 150.0f;
+        ODriveControlMode ctrl_mode;
         // Motor Command Struct:
         lowleveltypes::MotorCommand motor_commands = { 0 };
         // Control Loop Thread Variables:
@@ -125,7 +124,7 @@ class MotorController : public Estop {
                         float q_error = motor_commands.position_setpoint[motor_id] - odrv_socket->getPositionEstimate(motor_id);
                         float qd_error = motor_commands.velocity_setpoint[motor_id] - odrv_socket->getVelocityEstimate(motor_id);
                         float torque_input = motor_commands.torque_feedforward[motor_id] + motor_commands.kp[motor_id] * q_error + motor_commands.kd[motor_id] * qd_error;
-                        switch(control_mode) {
+                        switch(ctrl_mode) {
                             case ODriveControlMode::POSITION:
                                 odrv_socket->set_stiffness(motor_id, motor_commands.stiffness[motor_id]);
                                 odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);

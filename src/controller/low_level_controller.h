@@ -7,6 +7,7 @@
 #include <atomic>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "src/communication/odrive_socket.h"
 #include "src/utils/estop.h"
@@ -38,22 +39,22 @@ class MotorController : public Estop {
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
-        std::vector<ODriveAxisState> get_axis_state() {
-            std::vector<ODriveAxisState> axis_state;
+        std::vector<std::string> get_axis_state() {
+            std::vector<std::string> axis_state;
             for(const canid_t motor_id : motor_ids) {
                 uint8_t state = odrv_socket->getAxisState(motor_id);
                 switch (state) {
                     case ODriveAxisState::UNDEFINED:
-                        axis_state.push_back(ODriveAxisState::UNDEFINED);
+                        axis_state.push_back("UNDEFINED");
                         break;
                     case ODriveAxisState::IDLE:
-                        axis_state.push_back(ODriveAxisState::IDLE);
+                        axis_state.push_back("IDLE");
                         break;
                     case ODriveAxisState::CLOSED_LOOP_CONTROL:
-                        axis_state.push_back(ODriveAxisState::CLOSED_LOOP_CONTROL);
+                        axis_state.push_back("CLOSED_LOOP_CONTROL");
                         break;
                     default:
-                        axis_state.push_back(ODriveAxisState::UNDEFINED);
+                        axis_state.push_back("UNKNOWN");
                         break;
                 }
             }

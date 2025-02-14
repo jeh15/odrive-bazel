@@ -16,6 +16,11 @@ def main(argv=None):
     motor_controller.set_axis_state(
         lowlevelapi.ODriveAxisState.CLOSED_LOOP_CONTROL,
     )
+
+    # Read Axis States:
+    axis_states = motor_controller.get_axis_state()
+    print(f"Axis States: {axis_states}")
+
     motor_controller.set_control_mode(
         lowlevelapi.ODriveControlMode.VELOCITY,
     )

@@ -81,6 +81,7 @@ PYBIND11_MODULE(lowlevelapi, m) {
         .def_readwrite("velocity_setpoint", &lowleveltypes::MotorCommand::velocity_setpoint)
         .def_readwrite("torque_feedforward", &lowleveltypes::MotorCommand::torque_feedforward)
         .def_readwrite("damping", &lowleveltypes::MotorCommand::damping)
+        .def_readwrite("velocity_integrator" &lowleveltypes::MotorCommand::velocity_integrator)
         .def_readwrite("stiffness", &lowleveltypes::MotorCommand::stiffness)
         .def_readwrite("kp", &lowleveltypes::MotorCommand::kp)
         .def_readwrite("kd", &lowleveltypes::MotorCommand::kd);

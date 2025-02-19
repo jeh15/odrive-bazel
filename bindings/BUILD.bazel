@@ -38,9 +38,9 @@ exports_files(
 )
 
 py_wheel(
-    name = "odrive_api",
+    name = "odrive_control_api",
     twine = "@publish_deps//twine",
-    distribution = "odrive_api",
+    distribution = "odrive_control_api",
     summary = "Custom python bindings for the Odrive motor controllers.",
     description_file = ":description.md",
     python_requires = ">=3.10",

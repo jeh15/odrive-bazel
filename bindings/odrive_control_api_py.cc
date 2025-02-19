@@ -13,8 +13,8 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 
-PYBIND11_MODULE(lowlevelapi, m) {
-    m.doc() = "Low-level Control API bindings";
+PYBIND11_MODULE(odrive_control_api, m) {
+    m.doc() = "Low-level Control API bindings for the ODrive motor controllers";
 
     py::enum_<ODriveCanID>(m, "ODriveCanID")
         .value("HEARTBEAT", ODriveCanID::HEARTBEAT)

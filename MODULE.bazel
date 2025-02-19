@@ -6,6 +6,9 @@ module(
     name = "odrive_control",
 )
 
+# Platform rules:
+bazel_dep(name = "platforms", version = "0.0.11")
+
 # Python Rules:
 bazel_dep(name = "rules_python", version = "1.0.0")
 

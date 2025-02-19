@@ -3,8 +3,8 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 
 pybind_library(
-    name = "lowlevelapi_cc_library",
-    srcs = ["lowlevelapi_py.cc"],
+    name = "odrive_control_api_cc_library",
+    srcs = ["odrive_control_api_py.cc"],
     deps = [
         "//src/controller:low_level_controller",
         "//src/controller:low_level_types",
@@ -15,21 +15,21 @@ pybind_library(
 )
 
 pybind_extension(
-    name = "lowlevelapi",
-    deps = [":lowlevelapi_cc_library"],
+    name = "odrive_control_api",
+    deps = [":odrive_control_api_cc_library"],
     visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "lowlevelapi_library",
-    data = [":lowlevelapi"],
+    name = "odrive_control_api_library",
+    data = [":odrive_control_api"],
     imports = ["."],
     visibility = ["//visibility:public"],
 )
 
 py_package(
-    name = "odrive_pkg",
-    deps = [":lowlevelapi_library"],
+    name = "odrive_control_api_pkg",
+    deps = [":odrive_control_api_library"],
 )
 
 exports_files(
@@ -38,15 +38,15 @@ exports_files(
 )
 
 py_wheel(
-    name = "odrive_control_api",
+    name = "odrive_api",
     twine = "@publish_deps//twine",
-    distribution = "odrive_control_api",
+    distribution = "odrive_api",
     summary = "Custom python bindings for the Odrive motor controllers.",
     description_file = ":description.md",
     python_requires = ">=3.10",
     python_tag = "py3",
-    version = "0.0.0",
+    version = "0.0.1",
     deps = [
-        ":odrive_pkg",
+        ":odrive_control_api_pkg",
     ],
 )

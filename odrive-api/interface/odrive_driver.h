@@ -9,18 +9,21 @@
 #include <vector>
 #include <string>
 
-#include "src/communication/odrive_socket.h"
-#include "src/utils/estop.h"
+#include "odrive-api/communication/odrive_socket.h"
+#include "odrive-api/utils/estop.h"
 
-#include "src/controller/low_level_types.h"
+#include "odrive-api/containers.h"
 
 
-class MotorController : public Estop {
+using namespace odrive::containers;
+
+
+class ODriveDriver : public Estop {
     public:
-        MotorController(std::shared_ptr<ODriveSocket> odrv, std::vector<canid_t> motor_ids)
-            : Estop(), odrv_socket(odrv), motor_ids(motor_ids) { }
+        ODriveDriver(std::shared_ptr<ODriveSocket> odrv, std::vector<canid_t> motor_ids, int control_rate_us = 2000)
+            : Estop(), odrv_socket(odrv), motor_ids(motor_ids), control_rate_us(control_rate_us) { }
 
-        ~MotorController() { 
+        ~ODriveDriver() { 
             for(const canid_t motor_id : motor_ids)
                 odrv_socket->setAxisState(motor_id, ODriveAxisState::IDLE);
         }
@@ -59,16 +62,16 @@ class MotorController : public Estop {
             return axis_state;
         }
 
-        void initialize_control_thread() {
-            thread = std::thread(&MotorController::control_loop, this);
+        void initialize_thread() {
+            thread = std::thread(&ODriveDriver::control_loop, this);
         }
 
-        void stop_control_thread() {
+        void stop_thread() {
             running = false;
             thread.join();
         }
 
-        void update_command(lowleveltypes::MotorCommand& command) {
+        void update_command(MotorCommand& command) {
             std::lock_guard<std::mutex> lock(mutex);
             for(const canid_t motor_id : motor_ids) {
                 motor_commands.position_setpoint[motor_id] = command.position_setpoint[motor_id];
@@ -77,13 +80,11 @@ class MotorController : public Estop {
                 motor_commands.damping[motor_id] = command.damping[motor_id];
                 motor_commands.velocity_integrator[motor_id] = command.velocity_integrator[motor_id];
                 motor_commands.stiffness[motor_id] = command.stiffness[motor_id];
-                motor_commands.kp[motor_id] = command.kp[motor_id];
-                motor_commands.kd[motor_id] = command.kd[motor_id];
             }
         }
 
-        lowleveltypes::MotorState get_motor_states() {
-            lowleveltypes::MotorState motor_states = { 0 };
+        MotorState get_motor_states() {
+            MotorState motor_states = { 0 };
             for(const canid_t motor_id : motor_ids) {
                 motor_states.position[motor_id] = odrv_socket->getPositionEstimate(motor_id);
                 motor_states.velocity[motor_id] = odrv_socket->getVelocityEstimate(motor_id);
@@ -102,9 +103,10 @@ class MotorController : public Estop {
         float torque_constant_hip = 8.27f / 150.0f;
         ODriveControlMode ctrl_mode;
         // Motor Command Struct:
-        lowleveltypes::MotorCommand motor_commands = { 0 };
+        MotorCommand motor_commands = { 0 };
         // Control Loop Thread Variables:
-        uint8_t control_rate_ms = 2;
+        int control_rate_us;
+        std::chrono::microseconds control_rate = std::chrono::microseconds(control_rate_us);
         std::atomic<bool> running{true};
         std::mutex mutex;
         std::thread thread;
@@ -116,14 +118,15 @@ class MotorController : public Estop {
         }
 
         void control_loop() {
+            using Clock = std::chrono::steady_clock;
+            auto next_time = Clock::now();
             while(running) {
+                next_time += control_rate;
                 /* Lock Guard Scope */
                 {
                     std::lock_guard<std::mutex> lock(mutex);
                     for(const canid_t motor_id : motor_ids) {
-                        float q_error = motor_commands.position_setpoint[motor_id] - odrv_socket->getPositionEstimate(motor_id);
-                        float qd_error = motor_commands.velocity_setpoint[motor_id] - odrv_socket->getVelocityEstimate(motor_id);
-                        float torque_input = motor_commands.torque_feedforward[motor_id] + motor_commands.kp[motor_id] * q_error + motor_commands.kd[motor_id] * qd_error;
+                        float torque_input = motor_commands.torque_feedforward[motor_id];
                         switch(ctrl_mode) {
                             case ODriveControlMode::POSITION:
                                 odrv_socket->set_stiffness(motor_id, motor_commands.stiffness[motor_id]);
@@ -152,7 +155,15 @@ class MotorController : public Estop {
                     }
                 }
                 // Control Rate:
-                std::this_thread::sleep_for(std::chrono::milliseconds(control_rate_ms));
+                auto now = Clock::now();
+                if (now < next_time) {
+                    std::this_thread::sleep_until(next_time);
+                }
+                else {
+                    auto overrun = std::chrono::duration_cast<std::chrono::microseconds>(now - next_time);
+                    std::cout << "Control loop overrun: " << overrun.count() << "us" << std::endl;
+                    next_time = now;
+                }
             }
         }
 

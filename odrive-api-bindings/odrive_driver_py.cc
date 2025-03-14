@@ -4,16 +4,17 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "src/communication/odrive_socket.h"
-#include "src/controller/low_level_controller.h"
-#include "src/controller/low_level_types.h"
+#include "odrive-api/communication/odrive_socket.h"
+#include "odrive-api/interface/unitree_driver.h"
+#include "odrive-api/containers.h"
 
 
 namespace py = pybind11;
 using namespace pybind11::literals;
+using namespace odrive::containers;
 
 
-PYBIND11_MODULE(odrive_control_api, m) {
+PYBIND11_MODULE(odrive_api, m) {
     m.doc() = "Low-level Control API bindings for the ODrive motor controllers";
 
     py::enum_<ODriveCanID>(m, "ODriveCanID")
@@ -75,55 +76,91 @@ PYBIND11_MODULE(odrive_control_api, m) {
         .def("set_damping", &ODriveSocket::set_damping, "id"_a, "vel_gain"_a, "vel_integrator_gain"_a = 0.0f)
         .def("clearErrors", &ODriveSocket::clearErrors, "id"_a);
 
-    py::class_<lowleveltypes::MotorCommand>(m, "MotorCommand")
+    py::class_<MotorCommand>(m, "MotorCommand")
         .def(py::init<>())
-        .def_readwrite("position_setpoint", &lowleveltypes::MotorCommand::position_setpoint)
-        .def_readwrite("velocity_setpoint", &lowleveltypes::MotorCommand::velocity_setpoint)
-        .def_readwrite("torque_feedforward", &lowleveltypes::MotorCommand::torque_feedforward)
-        .def_readwrite("damping", &lowleveltypes::MotorCommand::damping)
-        .def_readwrite("velocity_integrator", &lowleveltypes::MotorCommand::velocity_integrator)
-        .def_readwrite("stiffness", &lowleveltypes::MotorCommand::stiffness)
-        .def_readwrite("kp", &lowleveltypes::MotorCommand::kp)
-        .def_readwrite("kd", &lowleveltypes::MotorCommand::kd);
+        .def_readwrite("position_setpoint", &MotorCommand::position_setpoint)
+        .def_readwrite("velocity_setpoint", &MotorCommand::velocity_setpoint)
+        .def_readwrite("torque_feedforward", &MotorCommand::torque_feedforward)
+        .def_readwrite("damping", &MotorCommand::damping)
+        .def_readwrite("velocity_integrator", &MotorCommand::velocity_integrator)
+        .def_readwrite("stiffness", &MotorCommand::stiffness);
 
-    py::class_<lowleveltypes::MotorState>(m, "MotorState")
+    py::class_<MotorState>(m, "MotorState")
         .def(py::init<>())
-        .def_readwrite("position", &lowleveltypes::MotorState::position)
-        .def_readwrite("velocity", &lowleveltypes::MotorState::velocity)
-        .def_readwrite("torque_estimate", &lowleveltypes::MotorState::torque_estimate)
-        .def_readwrite("current_setpoint", &lowleveltypes::MotorState::current_setpoint)
-        .def_readwrite("current_measured", &lowleveltypes::MotorState::current_measured)
+        .def_readwrite("position", &MotorState::position)
+        .def_readwrite("velocity", &MotorState::velocity)
+        .def_readwrite("torque_estimate", &MotorState::torque_estimate)
+        .def_readwrite("current_setpoint", &MotorState::current_setpoint)
+        .def_readwrite("current_measured", &MotorState::current_measured)
         .def(py::pickle(
-            [](const lowleveltypes::MotorState &obj) {
+            [](const MotorState &obj) {
                 return py::make_tuple(obj.position, obj.velocity, obj.torque_estimate, obj.current_setpoint, obj.current_measured);
             },
             [](py::tuple t) {
                 if (t.size() != 5)
                     throw std::runtime_error("Invalid state object");
-                lowleveltypes::MotorState obj;
-                obj.position = t[0].cast<std::array<float, lowleveltypes::num_motors>>();
-                obj.velocity = t[1].cast<std::array<float, lowleveltypes::num_motors>>();
-                obj.torque_estimate = t[2].cast<std::array<float, lowleveltypes::num_motors>>();
-                obj.current_setpoint = t[3].cast<std::array<float, lowleveltypes::num_motors>>();
-                obj.current_measured = t[4].cast<std::array<float, lowleveltypes::num_motors>>();
+                MotorState obj;
+                obj.position = t[0].cast<std::array<float, num_motors>>();
+                obj.velocity = t[1].cast<std::array<float, num_motors>>();
+                obj.torque_estimate = t[2].cast<std::array<float, num_motors>>();
+                obj.current_setpoint = t[3].cast<std::array<float, num_motors>>();
+                obj.current_measured = t[4].cast<std::array<float, num_motors>>();
                 return obj;
             }
         ))
-        .def("__copy__", [](const lowleveltypes::MotorState& obj) {
-            return lowleveltypes::MotorState(obj);
+        .def("__copy__", [](const MotorState& obj) {
+            return MotorState(obj);
         })
-        .def("__deepcopy__", [](const lowleveltypes::MotorState& obj, py::dict) {
-            return lowleveltypes::MotorState(obj);
+        .def("__deepcopy__", [](const MotorState& obj, py::dict) {
+            return MotorState(obj);
         }, "memo"_a);
+
+        py::class_<LogData>(m, "LogData")
+        .def(py::init<>())
+        .def_readwite("position", &LogData::position)
+        .def_readwite("velocity", &LogData::velocity)
+        .def_readwite("torque_estimate", &LogData::torque_estimate)
+        .def_readwite("current_setpoint", &LogData::current_setpoint)
+        .def_readwite("current_measured", &LogData::current_measured)
+        .def_readwite("fet_temperature", &LogData::fet_temperature)
+        .def(py::pickle(
+            [](const LogData &obj) {
+                return py::make_tuple(obj.position, obj.velocity, obj.torque_estimate, obj.current_setpoint, obj.current_measured, obj.fet_temperature);
+            },
+            [](py::tuple t) {
+                if (t.size() != 6)
+                    throw std::runtime_error("Invalid state object");
+                LogData obj;
+                obj.position = t[0].cast<std::array<float, num_motors>>();
+                obj.velocity = t[1].cast<std::array<float, num_motors>>();
+                obj.torque_estimate = t[2].cast<std::array<float, num_motors>>();
+                obj.current_setpoint = t[3].cast<std::array<float, num_motors>>();
+                obj.current_measured = t[4].cast<std::array<float, num_motors>>();
+                obj.fet_temperature = t[5].cast<std::array<float, num_motors>>();
+                return obj;
+            }
+        ))
+        .def("__copy__", [](const LogData& obj) {
+            return LogData(obj);
+        })
+        .def("__deepcopy__", [](const LogData& obj, py::dict) {
+            return LogData(obj);
+        }, "memo"_a);
+
+    py::class_<Logger>(m, "Logger")
+        .def(py::init<std::shared_ptr<ODriveSocket>, std::vector<canid_t>, int>(), "odrv"_a, "motor_ids"_a, "log_rate_us"_a = 2000)
+        .def("initialize", &Logger::initialize)
+        .def("initialize_thread", &Logger::initialize_thread)
+        .def("stop_thread", &Logger::stop_thread);
         
-    py::class_<MotorController>(m, "MotorController")
-        .def(py::init<std::shared_ptr<ODriveSocket>, std::vector<canid_t>>(), "odrv"_a, "motor_ids"_a)
-        .def("set_axis_state", &MotorController::set_axis_state, "axis_state"_a)
-        .def("set_control_mode", &MotorController::set_control_mode, "control_mode"_a, "input_mode"_a = ODriveInputMode::PASSTHROUGH)
-        .def("initialize_control_thread", &MotorController::initialize_control_thread)
-        .def("stop_control_thread", &MotorController::stop_control_thread)
-        .def("update_command", &MotorController::update_command, "command"_a)
-        .def("get_motor_states", &MotorController::get_motor_states)
-        .def("get_axis_state", &MotorController::get_axis_state);
+    py::class_<ODriveDriver>(m, "ODriveDriver")
+        .def(py::init<std::shared_ptr<ODriveSocket>, std::vector<canid_t>, int>(), "odrv"_a, "motor_ids"_a, "control_rate_us"_a = 2000)
+        .def("set_axis_state", &ODriveDriver::set_axis_state, "axis_state"_a)
+        .def("set_control_mode", &ODriveDriver::set_control_mode, "control_mode"_a, "input_mode"_a = ODriveInputMode::PASSTHROUGH)
+        .def("initialize_thread", &ODriveDriver::initialize_thread)
+        .def("stop_thread", &ODriveDriver::stop_thread)
+        .def("update_command", &ODriveDriver::update_command, "command"_a)
+        .def("get_motor_states", &ODriveDriver::get_motor_states)
+        .def("get_axis_state", &ODriveDriver::get_axis_state);
     
 }

@@ -8,33 +8,34 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_package", "py_wheel", "py_wheel_dist")
 
 pybind_library(
-    name = "odrive_control_api_cc_library",
-    srcs = ["odrive_control_api_py.cc"],
+    name = "odrive_driver_cc_library",
+    srcs = ["odrive_driver_py.cc"],
     deps = [
-        "//src/controller:low_level_controller",
-        "//src/controller:low_level_types",
-        "//src/communication:odrive_socket",
+        "//odrive-api:containers",
+        "//odrive-api/interface:odrive_driver",
+        "//odrive-api/logger:logger",
+        "//odrive-api/communication:odrive_socket",
     ],
     alwayslink = True,
     visibility = ["//visibility:public"],
 )
 
 pybind_extension(
-    name = "odrive_control_api",
-    deps = [":odrive_control_api_cc_library"],
+    name = "odrive_driver",
+    deps = [":odrive_driver_cc_library"],
     visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "odrive_control_api_library",
-    data = [":odrive_control_api"],
+    name = "odrive_driver_library",
+    data = [":odrive_driver"],
     imports = ["."],
     visibility = ["//visibility:public"],
 )
 
 py_package(
-    name = "odrive_control_api_pkg",
-    deps = [":odrive_control_api_library"],
+    name = "odrive_driver_pkg",
+    deps = [":odrive_driver_library"],
 )
 
 exports_files(
@@ -52,7 +53,7 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.3",
     deps = [
-        ":odrive_control_api_pkg",
+        ":odrive_driver_pkg",
     ],
     platform = select({
         "@platforms//cpu:x86_64": "manylinux2014_x86_64",

@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "logger",
+    srcs = ["logger.h"],
+    dpes = [
+        "//odrive-api:containers",
+        "//odrive-api/communication:odrive_socket",
+        "@spdlog//:spdlog",
+    ],
+    visibility = ["//visibility:public"],
+)

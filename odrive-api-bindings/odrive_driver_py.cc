@@ -1,8 +1,10 @@
+#include <filesystem>
 #include <memory>
 #include <vector>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl/filesystem.h>
 
 #include "odrive-api/communication/odrive_socket.h"
 #include "odrive-api/interface/unitree_driver.h"
@@ -148,7 +150,7 @@ PYBIND11_MODULE(odrive_api, m) {
         }, "memo"_a);
 
     py::class_<Logger>(m, "Logger")
-        .def(py::init<std::shared_ptr<ODriveSocket>, std::vector<canid_t>, int>(), "odrv"_a, "motor_ids"_a, "log_rate_us"_a = 2000)
+        .def(py::init<std::shared_ptr<ODriveSocket>, std::vector<canid_t>,  std::filesystem::path, int>(), "odrv"_a, "motor_ids"_a, "filepath"_a, "log_rate_us"_a = 2000)
         .def("initialize", &Logger::initialize)
         .def("initialize_thread", &Logger::initialize_thread)
         .def("stop_thread", &Logger::stop_thread);

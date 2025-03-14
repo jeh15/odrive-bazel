@@ -21,7 +21,7 @@ class Logger {
         Logger(
             std::shared_ptr<ODriveSocket> odrv_socket,
             std::vector<canid_t> motor_ids,
-            const std::filesystem::path& filepath,
+            const std::filesystem::path filepath,
             const int log_rate_us = 10000
         ) :
             odrv_socket(odrv_socket),

@@ -93,8 +93,7 @@ class Logger {
 
                     // Log data: (TODO: jeh15 generate string format)
                     logger->info(
-                        "Motor States:
-                        Position: {0}, {1}, Velocity: {2}, {3}, Torque Estimate: {4}, {5}, Current Setpoint: {6}, {7}, Current Measured: {8}, {9}, FET Temperature: {10}, {11}",
+                        "Motor States: Position: {0}, {1}, Velocity: {2}, {3}, Torque Estimate: {4}, {5}, Current Setpoint: {6}, {7}, Current Measured: {8}, {9}, FET Temperature: {10}, {11}",
                         data.position[0], data.position[1],
                         data.velocity[0], data.velocity[1],
                         data.torque_estimate[0], data.torque_estimate[1],

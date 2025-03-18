@@ -7,7 +7,8 @@
 #include <pybind11/stl/filesystem.h>
 
 #include "odrive-api/communication/odrive_socket.h"
-#include "odrive-api/interface/unitree_driver.h"
+#include "odrive-api/interface/odrive_driver.h"
+#include "odrive-api/logger/logger.h"
 #include "odrive-api/containers.h"
 
 
@@ -119,12 +120,12 @@ PYBIND11_MODULE(odrive_api, m) {
 
         py::class_<LogData>(m, "LogData")
         .def(py::init<>())
-        .def_readwite("position", &LogData::position)
-        .def_readwite("velocity", &LogData::velocity)
-        .def_readwite("torque_estimate", &LogData::torque_estimate)
-        .def_readwite("current_setpoint", &LogData::current_setpoint)
-        .def_readwite("current_measured", &LogData::current_measured)
-        .def_readwite("fet_temperature", &LogData::fet_temperature)
+        .def_readwrite("position", &LogData::position)
+        .def_readwrite("velocity", &LogData::velocity)
+        .def_readwrite("torque_estimate", &LogData::torque_estimate)
+        .def_readwrite("current_setpoint", &LogData::current_setpoint)
+        .def_readwrite("current_measured", &LogData::current_measured)
+        .def_readwrite("fet_temperature", &LogData::fet_temperature)
         .def(py::pickle(
             [](const LogData &obj) {
                 return py::make_tuple(obj.position, obj.velocity, obj.torque_estimate, obj.current_setpoint, obj.current_measured, obj.fet_temperature);

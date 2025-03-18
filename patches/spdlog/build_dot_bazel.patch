@@ -1,11 +1,10 @@
 --- /dev/null
 +++ BUILD.bazel
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +package(default_visibility = ["//visibility:public"])
 +
 +hdrs = glob([
 +    "include/**/*.h",
-+    "include/*.h",
 +])
 +
 +cc_library(

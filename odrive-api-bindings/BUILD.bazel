@@ -8,34 +8,35 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_package", "py_wheel", "py_wheel_dist")
 
 pybind_library(
-    name = "odrive_driver_cc_library",
-    srcs = ["odrive_driver_py.cc"],
+    name = "odrive_api_cc_library",
+    srcs = ["odrive_api_py.cc"],
     deps = [
         "//odrive-api:containers",
         "//odrive-api/interface:odrive_driver",
         "//odrive-api/logger:logger",
         "//odrive-api/communication:odrive_socket",
     ],
+    copts = ["-O3"],
     alwayslink = True,
     visibility = ["//visibility:public"],
 )
 
 pybind_extension(
-    name = "odrive_driver",
-    deps = [":odrive_driver_cc_library"],
+    name = "odrive_api",
+    deps = [":odrive_api_cc_library"],
     visibility = ["//visibility:public"],
 )
 
 py_library(
-    name = "odrive_driver_library",
-    data = [":odrive_driver"],
+    name = "odrive_api_library",
+    data = [":odrive_api"],
     imports = ["."],
     visibility = ["//visibility:public"],
 )
 
 py_package(
-    name = "odrive_driver_pkg",
-    deps = [":odrive_driver_library"],
+    name = "odrive_api_pkg",
+    deps = [":odrive_api_library"],
 )
 
 exports_files(
@@ -44,7 +45,7 @@ exports_files(
 )
 
 py_wheel(
-    name = "odrive_api",
+    name = "odrive_api_wheel",
     twine = "@publish_deps//twine",
     distribution = "odrive_api",
     summary = "Custom python bindings for the Odrive motor controllers.",
@@ -53,7 +54,7 @@ py_wheel(
     python_tag = "py3",
     version = "0.0.3",
     deps = [
-        ":odrive_driver_pkg",
+        ":odrive_api_pkg",
     ],
     platform = select({
         "@platforms//cpu:x86_64": "manylinux2014_x86_64",

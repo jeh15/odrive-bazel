@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+cc_binary(
+    name = "main",
+    srcs = ["main.cc"],
+    deps = [
+        "//odrive-api/communication:odrive_socket",
+        "//odrive-api/logger:logger",
+        "@rules_cc//cc/runfiles:runfiles",
+    ],
+)
+
+py_binary(
+    name = "main_py",
+    srcs = ["main_py.py"],
+    data = ["//logs:log"],
+    deps = [
+        "//odrive-api-bindings:odrive_api_library",
+        "@rules_python//python/runfiles",
+        "@pypi//absl_py:pkg",
+    ],
+)
+

@@ -10,13 +10,14 @@
 #include "spdlog/sinks/basic_file_sink.h"
 
 #include "odrive-api/communication/odrive_socket.h"
+#include "odrive-api/utils/estop.h"
 #include "odrive-api/containers.h"
 
 
 using namespace odrive::containers;
 
 
-class Logger {
+class Logger : public Estop {
     public:
         Logger(
             std::shared_ptr<ODriveSocket> odrv_socket,
@@ -24,6 +25,7 @@ class Logger {
             const std::filesystem::path filepath,
             const int log_rate_us = 10000
         ) :
+            Estop(),
             odrv_socket(odrv_socket),
             motor_ids(motor_ids),
             filepath(filepath),
@@ -71,6 +73,14 @@ class Logger {
         std::atomic<bool> running{true};
         std::mutex mutex;
         std::thread thread;
+
+        void estop(int sig) override {
+            printf("Running ESTOP...\n");
+            if (thread_initialized) {
+                stop_thread();
+                printf("Logger thread stopped...\n");
+            }
+        }
 
         void log_loop() {
             using Clock = std::chrono::steady_clock;

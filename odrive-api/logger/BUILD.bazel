@@ -6,6 +6,7 @@ cc_library(
     deps = [
         "//odrive-api:containers",
         "//odrive-api/communication:odrive_socket",
+        "//odrive-api/utils:estop",
         "@spdlog//:spdlog",
     ],
     visibility = ["//visibility:public"],

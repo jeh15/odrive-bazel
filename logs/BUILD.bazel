@@ -1,0 +1,5 @@
+filegroup(
+    name = "log",
+    srcs = ["log.log"],
+    visibility = ["//visibility:public"],
+)

@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "spdlog/spdlog.h"
+#include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
 #include "odrive-api/communication/odrive_socket.h"
@@ -23,22 +24,24 @@ class Logger : public Estop {
             std::shared_ptr<ODriveSocket> odrv_socket,
             std::vector<canid_t> motor_ids,
             const std::filesystem::path filepath,
-            const int log_rate_us = 10000
+            const int log_rate_us = 10000,
+            const int async_threads = 1
         ) :
             Estop(),
             odrv_socket(odrv_socket),
             motor_ids(motor_ids),
             filepath(filepath),
-            log_rate_us(log_rate_us) {}
+            log_rate_us(log_rate_us),
+            async_threads(async_threads) {}
         ~Logger() {}
 
         void initialize() {
-            // Check filepath:
-            if (!std::filesystem::exists(filepath.parent_path())) {
-                assert((void("Logger: Filepath not found."), false));
-            }
-            // Might need to wrap in pointer:
-            logger = spdlog::basic_logger_mt("odrive_logger", filepath);
+            // Setup logger:
+            spdlog::init_thread_pool(8192, async_threads);
+            logger = spdlog::basic_logger_mt<spdlog::async_factory>(
+                "odrive_logger",
+                filepath
+            );
             initialized = true;
         }
 
@@ -65,8 +68,9 @@ class Logger : public Estop {
         // Variables:
         std::filesystem::path filepath;
         int log_rate_us;
+        int async_threads;
         std::chrono::microseconds log_rate = std::chrono::microseconds(log_rate_us);
-        std::shared_ptr<spdlog::logger> logger;
+        std::shared_ptr<spdlog::async_logger> logger;
         bool initialized = false;
         bool thread_initialized = false;
         // Thread variables:
@@ -91,6 +95,8 @@ class Logger : public Estop {
                 {
                     std::lock_guard<std::mutex> lock(mutex);
 
+                    // Get data and timestamp:
+                    auto timestamp = Clock::now().time_since_epoch().count();
                     LogData data = { 0 };
                     for (const canid_t motor_id : motor_ids) {
                         data.position[motor_id] = odrv_socket->getPositionEstimate(motor_id);
@@ -103,12 +109,11 @@ class Logger : public Estop {
 
                     // Log data: (TODO: jeh15 generate string format)
                     logger->info(
-                        "Motor States: Position: {0}, {1}, Velocity: {2}, {3}, Torque Estimate: {4}, {5}, Current Setpoint: {6}, {7}, Current Measured: {8}, {9}, FET Temperature: {10}, {11}",
+                        "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}",
+                        timestamp,
                         data.position[0], data.position[1],
                         data.velocity[0], data.velocity[1],
                         data.torque_estimate[0], data.torque_estimate[1],
-                        data.current_setpoint[0], data.current_setpoint[1],
-                        data.current_measured[0], data.current_measured[1],
                         data.fet_temperature[0], data.fet_temperature[1]
                     );
                 }

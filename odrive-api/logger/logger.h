@@ -25,23 +25,23 @@ class Logger : public Estop {
             std::vector<canid_t> motor_ids,
             const std::filesystem::path filepath,
             const int log_rate_us = 10000,
-            const int async_threads = 1
+            const size_t queue_size = 8192,
+            const size_t async_threads = 1
         ) :
             Estop(),
             odrv_socket(odrv_socket),
             motor_ids(motor_ids),
             filepath(filepath),
             log_rate_us(log_rate_us),
+            queue_size(queue_size),
             async_threads(async_threads) {}
         ~Logger() {}
 
         void initialize() {
             // Setup logger:
-            spdlog::init_thread_pool(8192, async_threads);
-            logger = spdlog::basic_logger_mt<spdlog::async_factory>(
-                "odrive_logger",
-                filepath
-            );
+            spdlog::set_pattern("%v");
+            spdlog::init_thread_pool(queue_size, async_threads);
+            logger = spdlog::basic_logger_mt<spdlog::async_factory>("odrive_logger", filepath);
             initialized = true;
         }
 
@@ -61,6 +61,10 @@ class Logger : public Estop {
             thread.join();
         }
 
+        void shutdown() {
+            spdlog::shutdown();
+        }
+
     private:
         // Odrive Socket:
         std::shared_ptr<ODriveSocket> odrv_socket;
@@ -68,9 +72,10 @@ class Logger : public Estop {
         // Variables:
         std::filesystem::path filepath;
         int log_rate_us;
-        int async_threads;
+        size_t queue_size;
+        size_t async_threads;
         std::chrono::microseconds log_rate = std::chrono::microseconds(log_rate_us);
-        std::shared_ptr<spdlog::async_logger> logger;
+        std::shared_ptr<spdlog::logger> logger;
         bool initialized = false;
         bool thread_initialized = false;
         // Thread variables:
@@ -83,6 +88,10 @@ class Logger : public Estop {
             if (thread_initialized) {
                 stop_thread();
                 printf("Logger thread stopped...\n");
+            }
+            if (initialized) {
+                shutdown();
+                printf("Flushing logger...");
             }
         }
 

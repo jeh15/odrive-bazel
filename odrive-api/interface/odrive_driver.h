@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+#include "odrive-api/interface/odrive_socket_driver.h"
 #include "odrive-api/communication/odrive_socket.h"
 #include "odrive-api/utils/estop.h"
 
@@ -20,8 +21,8 @@ using namespace odrive::containers;
 
 class ODriveDriver : public Estop {
     public:
-        ODriveDriver(std::shared_ptr<ODriveSocket> odrv, std::vector<canid_t> motor_ids, int control_rate_us = 2000)
-            : Estop(), odrv_socket(odrv), motor_ids(motor_ids), control_rate_us(control_rate_us) { }
+        ODriveDriver(std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs, int control_rate_us = 2000)
+            : Estop(), odrvs(odrvs), motor_ids(motor_ids), control_rate_us(control_rate_us) { }
 
         ~ODriveDriver() { 
             for(const canid_t motor_id : motor_ids)
@@ -30,18 +31,18 @@ class ODriveDriver : public Estop {
 
         // Public methods:
         void set_axis_state(const ODriveAxisState axis_state) {
-            for(const canid_t motor_id : motor_ids)
-                odrv_socket->setAxisState(motor_id, axis_state);
+            for(const std::shared_ptr<ODriveSocketDriver> odrv : odrvs)
+                odrv->set_axis_state(axis_state);
         }
 
         void set_control_mode(const ODriveControlMode control_mode, const ODriveInputMode input_mode = ODriveInputMode::PASSTHROUGH) {
             ctrl_mode = control_mode;
-            for(const canid_t motor_id : motor_ids)
-                odrv_socket->setControlMode(motor_id, control_mode, input_mode);
+            for(const std::shared_ptr<ODriveSocketDriver> odrv : odrvs)
+                odrv->set_control_mode(control_mode, input_mode);
         }
 
         std::vector<std::string> get_axis_state(void) {
-            std::vector<std::string> axis_state;
+            std::vector<std::string> axis_states;
             for(const canid_t motor_id : motor_ids) {
                 uint8_t state = odrv_socket->getAxisState(motor_id);
                 switch (state) {

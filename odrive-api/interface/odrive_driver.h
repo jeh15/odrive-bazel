@@ -84,8 +84,8 @@ class ODriveDriver : public Estop {
 
         void estop(int sig) override {
             printf("Running ESTOP\n");
-            for(const canid_t motor_id : motor_ids)
-                odrv_socket->setAxisState(motor_id, ODriveAxisState::IDLE);
+            for(std::shared_ptr<ODriveSocketDriver>& odrv : odrvs)
+                odrv->set_axis_state(ODriveAxisState::IDLE);
         }
 
         void control_loop() {

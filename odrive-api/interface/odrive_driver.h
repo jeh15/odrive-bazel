@@ -24,43 +24,26 @@ class ODriveDriver : public Estop {
         ODriveDriver(std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs, int control_rate_us = 2000)
             : Estop(), odrvs(odrvs), motor_ids(motor_ids), control_rate_us(control_rate_us) { }
 
-        ~ODriveDriver() { 
-            for(const canid_t motor_id : motor_ids)
-                odrv_socket->setAxisState(motor_id, ODriveAxisState::IDLE);
-        }
+        ~ODriveDriver() {}
 
         // Public methods:
         void set_axis_state(const ODriveAxisState axis_state) {
-            for(const std::shared_ptr<ODriveSocketDriver> odrv : odrvs)
+            for(std::shared_ptr<ODriveSocketDriver>& odrv : odrvs)
                 odrv->set_axis_state(axis_state);
         }
 
         void set_control_mode(const ODriveControlMode control_mode, const ODriveInputMode input_mode = ODriveInputMode::PASSTHROUGH) {
-            ctrl_mode = control_mode;
-            for(const std::shared_ptr<ODriveSocketDriver> odrv : odrvs)
+            for(std::shared_ptr<ODriveSocketDriver>& odrv : odrvs)
                 odrv->set_control_mode(control_mode, input_mode);
         }
 
         std::vector<std::string> get_axis_state(void) {
             std::vector<std::string> axis_states;
-            for(const canid_t motor_id : motor_ids) {
-                uint8_t state = odrv_socket->getAxisState(motor_id);
-                switch (state) {
-                    case ODriveAxisState::UNDEFINED:
-                        axis_state.push_back("UNDEFINED");
-                        break;
-                    case ODriveAxisState::IDLE:
-                        axis_state.push_back("IDLE");
-                        break;
-                    case ODriveAxisState::CLOSED_LOOP_CONTROL:
-                        axis_state.push_back("CLOSED_LOOP_CONTROL");
-                        break;
-                    default:
-                        axis_state.push_back("UNKNOWN");
-                        break;
-                }
+            for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
+                std::vector<std::string> axis_state = odrv->get_axis_state();
+                axis_states.insert(axis_states.end(), axis_state.begin(), axis_state.end());
             }
-            return axis_state;
+            return axis_states;
         }
 
         void initialize_thread() {
@@ -72,44 +55,31 @@ class ODriveDriver : public Estop {
             thread.join();
         }
 
-        void update_command(MotorCommand& command) {
-            std::lock_guard<std::mutex> lock(mutex);
-            for(const canid_t motor_id : motor_ids) {
-                motor_commands.position_setpoint[motor_id] = command.position_setpoint[motor_id];
-                motor_commands.velocity_setpoint[motor_id] = command.velocity_setpoint[motor_id];
-                motor_commands.torque_feedforward[motor_id] = command.torque_feedforward[motor_id];
-                motor_commands.damping[motor_id] = command.damping[motor_id];
-                motor_commands.velocity_integrator[motor_id] = command.velocity_integrator[motor_id];
-                motor_commands.stiffness[motor_id] = command.stiffness[motor_id];
+        void update_command(const std::vector<MotorCommand>& commands) {
+            for(auto& [odrv, command] : std::views::zip(odrvs, commands)) {
+                odrv->update_command(command);
             }
         }
 
-        MotorState get_motor_states() {
-            MotorState motor_states = { 0 };
-            for(const canid_t motor_id : motor_ids) {
-                motor_states.position[motor_id] = odrv_socket->getPositionEstimate(motor_id);
-                motor_states.velocity[motor_id] = odrv_socket->getVelocityEstimate(motor_id);
-                motor_states.torque_estimate[motor_id] = odrv_socket->getTorqueEstimate(motor_id);
-                motor_states.current_setpoint[motor_id] = odrv_socket->getIqSetpoint(motor_id);
-                motor_states.current_measured[motor_id] = odrv_socket->getIqMeasured(motor_id);
+        std::vector<MotorState> get_motor_states() {
+            std::vector<MotorState> motor_states;
+            for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
+                MotorState motor_state = odrv->get_motor_state();
+                motor_states.push_back(motor_state);
             }
             return motor_states;
         }
 
     private:
         // ODrive Variables:
-        std::shared_ptr<ODriveSocket> odrv_socket;
-        std::vector<canid_t> motor_ids;
+        std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs;
         float torque_constant_knee = 8.27F / 330.0F;
         float torque_constant_hip = 8.27f / 150.0f;
-        ODriveControlMode ctrl_mode;
-        // Motor Command Struct:
-        MotorCommand motor_commands = { 0 };
         // Control Loop Thread Variables:
         int control_rate_us;
         std::chrono::microseconds control_rate = std::chrono::microseconds(control_rate_us);
         std::atomic<bool> running{true};
-        std::mutex mutex;
+        std::mutex mutex;   // Currently not used, but may be needed in the future
         std::thread thread;
 
         void estop(int sig) override {
@@ -123,38 +93,12 @@ class ODriveDriver : public Estop {
             auto next_time = Clock::now();
             while(running) {
                 next_time += control_rate;
-                /* Lock Guard Scope */
-                {
-                    std::lock_guard<std::mutex> lock(mutex);
-                    for(const canid_t motor_id : motor_ids) {
-                        float torque_input = motor_commands.torque_feedforward[motor_id];
-                        switch(ctrl_mode) {
-                            case ODriveControlMode::POSITION:
-                                odrv_socket->set_stiffness(motor_id, motor_commands.stiffness[motor_id]);
-                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
-                                odrv_socket->position_command(
-                                    motor_id,
-                                    motor_commands.position_setpoint[motor_id],
-                                    motor_commands.velocity_setpoint[motor_id],
-                                    torque_input
-                                );
-                                break;
-                            case ODriveControlMode::VELOCITY:
-                                odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
-                                odrv_socket->velocity_command(
-                                    motor_id,
-                                    motor_commands.velocity_setpoint[motor_id],
-                                    torque_input
-                                );
-                                break;
-                            case ODriveControlMode::TORQUE:
-                                odrv_socket->torque_command(motor_id, torque_input);
-                                break;
-                            case ODriveControlMode::VOLTAGE:
-                                break;
-                        }
-                    }
+
+                /* ODrive Socket Driver handles its own locks */
+                for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
+                    odrv->send_command();
                 }
+
                 // Control Rate:
                 auto now = Clock::now();
                 if (now < next_time) {

@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <mutex>
 
 #include "odrive-api/communication/odrive_socket.h"
 
@@ -25,17 +26,20 @@ class ODriveSocketDriver {
 
         // Public methods:
         void set_axis_state(const ODriveAxisState axis_state) {
+            std::lock_guard<std::mutex> lock(mutex);
             for(const canid_t motor_id : motor_ids)
                 odrv_socket->setAxisState(motor_id, axis_state);
         }
 
         void set_control_mode(const ODriveControlMode control_mode, const ODriveInputMode input_mode = ODriveInputMode::PASSTHROUGH) {
+            std::lock_guard<std::mutex> lock(mutex);
             ctrl_mode = control_mode;
             for(const canid_t motor_id : motor_ids)
                 odrv_socket->setControlMode(motor_id, control_mode, input_mode);
         }
 
         std::vector<std::string> get_axis_state(void) {
+            std::lock_guard<std::mutex> lock(mutex);
             std::vector<std::string> axis_state;
             for(const canid_t motor_id : motor_ids) {
                 uint8_t state = odrv_socket->getAxisState(motor_id);
@@ -58,6 +62,7 @@ class ODriveSocketDriver {
         }
 
         void update_command(MotorCommand& command) {
+            std::lock_guard<std::mutex> lock(mutex);
             for(const canid_t motor_id : motor_ids) {
                 motor_commands.position_setpoint[motor_id] = command.position_setpoint[motor_id];
                 motor_commands.velocity_setpoint[motor_id] = command.velocity_setpoint[motor_id];
@@ -69,6 +74,7 @@ class ODriveSocketDriver {
         }
 
         MotorState get_motor_states() {
+            std::lock_guard<std::mutex> lock(mutex);
             MotorState motor_states = { 0 };
             for(const canid_t motor_id : motor_ids) {
                 motor_states.position[motor_id] = odrv_socket->getPositionEstimate(motor_id);
@@ -80,9 +86,44 @@ class ODriveSocketDriver {
             return motor_states;
         }
 
+        void send_command() {
+            std::lock_guard<std::mutex> lock(mutex);
+            for(const canid_t motor_id : motor_ids) {
+                float torque_input = motor_commands.torque_feedforward[motor_id];
+                switch(ctrl_mode) {
+                    case ODriveControlMode::POSITION:
+                        odrv_socket->set_stiffness(motor_id, motor_commands.stiffness[motor_id]);
+                        odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
+                        odrv_socket->position_command(
+                            motor_id,
+                            motor_commands.position_setpoint[motor_id],
+                            motor_commands.velocity_setpoint[motor_id],
+                            torque_input
+                        );
+                        break;
+                    case ODriveControlMode::VELOCITY:
+                        odrv_socket->set_damping(motor_id, motor_commands.damping[motor_id], motor_commands.velocity_integrator[motor_id]);
+                        odrv_socket->velocity_command(
+                            motor_id,
+                            motor_commands.velocity_setpoint[motor_id],
+                            torque_input
+                        );
+                        break;
+                    case ODriveControlMode::TORQUE:
+                        odrv_socket->torque_command(motor_id, torque_input);
+                        break;
+                    case ODriveControlMode::VOLTAGE:
+                        break;
+                }
+            }
+        }
+
         private:
             std::shared_ptr<ODriveSocket> odrv_socket;
             std::vector<canid_t> motor_ids;
             MotorCommand motor_commands = { 0 };
             ODriveControlMode ctrl_mode;
+            // Thread safety:
+            std::mutex mutex;
+
 }

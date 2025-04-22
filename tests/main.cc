@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <thread>
 
 #include "rules_cc/cc/runfiles/runfiles.h"
 
@@ -32,14 +33,22 @@ int main(int argc, char** argv) {
     );
 
     // Set control mode and Axis State:
-    ODriveControlMode control_mode = ODriveControlMode::POSITION;
-    odrive_driver.set_control_mode(
-        control_mode
-    );
     odrive_driver.set_axis_state(ODriveAxisState::CLOSED_LOOP_CONTROL);
+    odrive_driver.set_control_mode(
+        ODriveControlMode::POSITION
+    );
+
+    // Wait for ODrive
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     // Get Current Positions and set as default Motor Command Positions:
     std::vector<MotorState> motor_states = odrive_driver.get_motor_states();
+
+    // Print Motor Positions:
+    for(const auto& motor_state : motor_states) {
+        std::cout << motor_state.position[0] << " " << motor_state.position[1] << std::endl;
+    }
+
     std::vector<MotorCommand> motor_commands(motor_states.size());
     for(size_t i = 0; i < motor_states.size(); ++i) {
         std::copy(

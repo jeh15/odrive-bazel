@@ -21,16 +21,14 @@ using namespace odrive::containers;
 class Logger : public Estop {
     public:
         Logger(
-            std::shared_ptr<ODriveSocket> odrv_socket,
-            std::vector<canid_t> motor_ids,
+            std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs,
             const std::filesystem::path filepath,
             const int log_rate_us = 10000,
             const size_t queue_size = 8192,
             const size_t async_threads = 1
         ) :
             Estop(),
-            odrv_socket(odrv_socket),
-            motor_ids(motor_ids),
+            odrvs(odrvs),
             filepath(filepath),
             log_rate_us(log_rate_us),
             queue_size(queue_size),
@@ -67,8 +65,7 @@ class Logger : public Estop {
 
     private:
         // Odrive Socket:
-        std::shared_ptr<ODriveSocket> odrv_socket;
-        std::vector<canid_t> motor_ids;
+        std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs;
         // Variables:
         std::filesystem::path filepath;
         int log_rate_us;
@@ -104,27 +101,23 @@ class Logger : public Estop {
                 {
                     std::lock_guard<std::mutex> lock(mutex);
 
-                    // Get data and timestamp:
+                    // Get data and timestamp: (This assumes number of motors is 2)
+                    // Need to generalize number of motors per can line...
                     auto timestamp = Clock::now().time_since_epoch().count();
-                    LogData data = { 0 };
-                    for (const canid_t motor_id : motor_ids) {
-                        data.position[motor_id] = odrv_socket->getPositionEstimate(motor_id);
-                        data.velocity[motor_id] = odrv_socket->getVelocityEstimate(motor_id);
-                        data.torque_estimate[motor_id] = odrv_socket->getTorqueEstimate(motor_id);
-                        data.current_setpoint[motor_id] = odrv_socket->getIqSetpoint(motor_id);
-                        data.current_measured[motor_id] = odrv_socket->getIqMeasured(motor_id);
-                        data.fet_temperature[motor_id] = odrv_socket->getFETTemperature(motor_id);
+                    for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
+                        auto id = odrv->get_id();
+                        auto data = odrv->get_log_data();
+                        logger->info(
+                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
+                            id,
+                            timestamp,
+                            data.position[0], data.position[1],
+                            data.velocity[0], data.velocity[1],
+                            data.torque_estimate[0], data.torque_estimate[1],
+                            data.fet_temperature[0], data.fet_temperature[1]
+                        );
                     }
 
-                    // Log data: (TODO: jeh15 generate string format)
-                    logger->info(
-                        "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}",
-                        timestamp,
-                        data.position[0], data.position[1],
-                        data.velocity[0], data.velocity[1],
-                        data.torque_estimate[0], data.torque_estimate[1],
-                        data.fet_temperature[0], data.fet_temperature[1]
-                    );
                 }
                 // Log Rate:
                 auto now = Clock::now();

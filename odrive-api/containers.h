@@ -24,7 +24,7 @@ namespace odrive::containers {
         std::array<float, num_motors> current_measured = { 0 };
     };
 
-    struct LogData {
+    struct FullMotorState {
         std::array<float, num_motors> position = { 0 };
         std::array<float, num_motors> velocity = { 0 };
         std::array<float, num_motors> torque_estimate = { 0 };

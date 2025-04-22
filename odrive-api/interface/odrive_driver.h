@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <ranges>
+#include <tuple>
 
 #include "odrive-api/interface/odrive_socket_driver.h"
 #include "odrive-api/communication/odrive_socket.h"
@@ -22,7 +24,7 @@ using namespace odrive::containers;
 class ODriveDriver : public Estop {
     public:
         ODriveDriver(std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs, int control_rate_us = 2000)
-            : Estop(), odrvs(odrvs), motor_ids(motor_ids), control_rate_us(control_rate_us) { }
+            : Estop(), odrvs(odrvs), control_rate_us(control_rate_us) { }
 
         ~ODriveDriver() {}
 
@@ -55,16 +57,25 @@ class ODriveDriver : public Estop {
             thread.join();
         }
 
-        void update_command(const std::vector<MotorCommand>& commands) {
-            for(auto& [odrv, command] : std::views::zip(odrvs, commands)) {
-                odrv->update_command(command);
+        void update_command(std::vector<MotorCommand>& commands) {
+            if (odrvs.size() != commands.size()) {
+                throw std::invalid_argument("ODrive Driver: Number of Commands must be equal to Number of ODrives");
             }
+
+            for (size_t i = 0; i < odrvs.size(); ++i) {
+                odrvs[i]->update_command(commands[i]);
+            }
+            
+            // Requires C++23:
+            // for(auto& [odrv, command] : std::views::zip(odrvs, commands)) {
+            //     odrv->update_command(command);
+            // }
         }
 
         std::vector<MotorState> get_motor_states() {
             std::vector<MotorState> motor_states;
             for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
-                MotorState motor_state = odrv->get_motor_state();
+                MotorState motor_state = odrv->get_motor_states();
                 motor_states.push_back(motor_state);
             }
             return motor_states;
@@ -84,8 +95,9 @@ class ODriveDriver : public Estop {
 
         void estop(int sig) override {
             printf("Running ESTOP\n");
-            for(std::shared_ptr<ODriveSocketDriver>& odrv : odrvs)
+            for(std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
                 odrv->set_axis_state(ODriveAxisState::IDLE);
+            }
         }
 
         void control_loop() {

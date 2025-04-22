@@ -5,8 +5,9 @@ cc_binary(
     name = "main",
     srcs = ["main.cc"],
     deps = [
+        "//odrive-api/interface:odrive_driver",
+        "//odrive-api/interface:odrive_socket_driver",
         "//odrive-api/communication:odrive_socket",
-        "//odrive-api/logger:logger",
         "@rules_cc//cc/runfiles:runfiles",
     ],
 )

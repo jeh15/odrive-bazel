@@ -1,9 +1,20 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
+    name = "odrive_socket_driver",
+    srcs = ["odrive_socket_driver.h"],
+    deps = [
+        "//odrive-api:containers",
+        "//odrive-api/communication:odrive_socket",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "odrive_driver",
     srcs = ["odrive_driver.h"],
     deps = [
+        ":odrive_socket_driver",
         "//odrive-api:containers",
         "//odrive-api/utils:estop",
         "//odrive-api/communication:odrive_socket",

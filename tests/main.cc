@@ -10,6 +10,8 @@
 #include "odrive-api/interface/odrive_socket_driver.h"
 #include "odrive-api/communication/odrive_socket.h"
 
+#include "odrive-api/logger/logger.h"
+
 using rules_cc::cc::runfiles::Runfiles;
 
 
@@ -26,10 +28,11 @@ int main(int argc, char** argv) {
     auto odrive_socket = std::make_shared<ODriveSocketDriver>(
         CAN_IFC, motor_ids
     );
+    std::vector<std::shared_ptr<ODriveSocketDriver>> odrvs = {odrive_socket};
 
     // ODrive Driver:
     auto odrive_driver = ODriveDriver(
-        std::vector<std::shared_ptr<ODriveSocketDriver>>{odrive_socket}
+        odrvs
     );
 
     // Set control mode and Axis State:
@@ -40,6 +43,16 @@ int main(int argc, char** argv) {
 
     // Wait for ODrive
     std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // Initialize Logger:
+    std::filesystem::path log_path = runfiles->Rlocation("odrive-bazel/logs/odrive_log.csv");
+    Logger logger(
+        odrvs,
+        log_path
+    );
+    logger.initialize();
+    logger.initialize_thread();
+
 
     // Get Current Positions and set as default Motor Command Positions:
     std::vector<MotorState> motor_states = odrive_driver.get_motor_states();
@@ -67,8 +80,11 @@ int main(int argc, char** argv) {
     odrive_driver.initialize_thread();
     std::this_thread::sleep_for(std::chrono::seconds(10));
 
-    // Stop Control Loop:
+    // Stop Control Loop and Logger Thread:
+    logger.stop_thread();
+    logger.shutdown();
     odrive_driver.stop_thread();
+
     
     // Set Axis State to IDLE:
     odrive_driver.set_axis_state(ODriveAxisState::IDLE);

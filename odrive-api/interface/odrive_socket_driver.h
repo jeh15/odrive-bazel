@@ -74,9 +74,9 @@ class ODriveSocketDriver {
             return motor_states;
         }
 
-        LogData get_full_motor_states() {
+        FullMotorState get_full_motor_states() {
             std::lock_guard<std::mutex> lock(mutex);
-            LogData log_data = { 0 };
+            FullMotorState log_data = { 0 };
             for(const canid_t motor_id : motor_ids) {
                 log_data.position[motor_id] = odrv_socket.getPositionEstimate(motor_id);
                 log_data.velocity[motor_id] = odrv_socket.getVelocityEstimate(motor_id);

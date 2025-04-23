@@ -106,7 +106,7 @@ class Logger : public Estop {
                     auto timestamp = Clock::now().time_since_epoch().count();
                     for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
                         auto id = odrv->get_id();
-                        auto data = odrv->get_log_data();
+                        auto data = odrv->get_full_motor_states();
                         logger->info(
                             "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
                             id,
@@ -117,7 +117,6 @@ class Logger : public Estop {
                             data.fet_temperature[0], data.fet_temperature[1]
                         );
                     }
-
                 }
                 // Log Rate:
                 auto now = Clock::now();

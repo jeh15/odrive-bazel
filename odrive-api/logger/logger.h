@@ -106,14 +106,15 @@ class Logger : public Estop {
                     auto timestamp = Clock::now().time_since_epoch().count();
                     for(const std::shared_ptr<ODriveSocketDriver>& odrv : odrvs) {
                         auto id = odrv->get_id();
-                        auto data = odrv->get_full_motor_states();
+                        auto data = odrv->get_odrive_states();
                         logger->info(
-                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
+                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}",
                             id,
                             timestamp,
                             data.position[0], data.position[1],
                             data.velocity[0], data.velocity[1],
                             data.torque_estimate[0], data.torque_estimate[1],
+                            data.bus_current[0], data.bus_current[1],
                             data.fet_temperature[0], data.fet_temperature[1]
                         );
                     }

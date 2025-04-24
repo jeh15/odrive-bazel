@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 
     // Initialize Control Loop:
     odrive_driver.initialize_thread();
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(30));
 
     // Stop Control Loop and Logger Thread:
     logger.stop_thread();

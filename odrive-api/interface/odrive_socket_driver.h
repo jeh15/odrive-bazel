@@ -74,18 +74,20 @@ class ODriveSocketDriver {
             return motor_states;
         }
 
-        FullMotorState get_full_motor_states() {
+        ODriveState get_odrive_states() {
             std::lock_guard<std::mutex> lock(mutex);
-            FullMotorState log_data = { 0 };
+            ODriveState odrive_state = { 0 };
             for(const canid_t motor_id : motor_ids) {
-                log_data.position[motor_id] = odrv_socket.getPositionEstimate(motor_id);
-                log_data.velocity[motor_id] = odrv_socket.getVelocityEstimate(motor_id);
-                log_data.torque_estimate[motor_id] = odrv_socket.getTorqueEstimate(motor_id);
-                log_data.current_setpoint[motor_id] = odrv_socket.getIqSetpoint(motor_id);
-                log_data.current_measured[motor_id] = odrv_socket.getIqMeasured(motor_id);
-                log_data.fet_temperature[motor_id] = odrv_socket.getFETTemperature(motor_id);
+                odrive_state.position[motor_id] = odrv_socket.getPositionEstimate(motor_id);
+                odrive_state.velocity[motor_id] = odrv_socket.getVelocityEstimate(motor_id);
+                odrive_state.torque_estimate[motor_id] = odrv_socket.getTorqueEstimate(motor_id);
+                odrive_state.current_setpoint[motor_id] = odrv_socket.getIqSetpoint(motor_id);
+                odrive_state.current_measured[motor_id] = odrv_socket.getIqMeasured(motor_id);
+                odrive_state.bus_current[motor_id] = odrv_socket.getBusCurrent(motor_id);
+                odrive_state.bus_voltage[motor_id] = odrv_socket.getBusVoltage(motor_id);
+                odrive_state.fet_temperature[motor_id] = odrv_socket.getFETTemperature(motor_id);
             }
-            return log_data;
+            return odrive_state;
         }
 
         std::string get_id() {

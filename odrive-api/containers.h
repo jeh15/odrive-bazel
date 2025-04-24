@@ -24,12 +24,14 @@ namespace odrive::containers {
         std::array<float, num_motors> current_measured = { 0 };
     };
 
-    struct FullMotorState {
+    struct ODriveState {
         std::array<float, num_motors> position = { 0 };
         std::array<float, num_motors> velocity = { 0 };
         std::array<float, num_motors> torque_estimate = { 0 };
         std::array<float, num_motors> current_setpoint = { 0 };
         std::array<float, num_motors> current_measured = { 0 };
+        std::array<float, num_motors> bus_current = { 0 };
+        std::array<float, num_motors> bus_voltage = { 0 };
         std::array<float, num_motors> fet_temperature = { 0 };
     };
 
